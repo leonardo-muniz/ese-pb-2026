@@ -54,11 +54,11 @@ Este diagrama demonstra o design da aplicação baseado em camadas (Controller, 
 
 ```mermaid
 graph TD
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef controller fill:#bbf,stroke:#333,stroke-width:2px;
-    classDef service fill:#bfb,stroke:#333,stroke-width:2px;
-    classDef repository fill:#fbb,stroke:#333,stroke-width:2px;
-    classDef database fill:#ddd,stroke:#333,stroke-width:2px;
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
+    classDef controller fill:#bbf,stroke:#333,stroke-width:2px,color:#000;
+    classDef service fill:#bfb,stroke:#333,stroke-width:2px,color:#000;
+    classDef repository fill:#fbb,stroke:#333,stroke-width:2px,color:#000;
+    classDef database fill:#ddd,stroke:#333,stroke-width:2px,color:#000;
 
     Client(Front-end React / Postman):::client
 
@@ -82,15 +82,15 @@ graph TD
 
     DB[(In-Memory Lists)]:::database
 
-    Client -->|HTTP GET/POST| UC
-    Client -->|HTTP GET/POST| WC
-    Client -->|HTTP GET/POST| TC
+    Client -->|HTTP REST| UC
+    Client -->|HTTP REST| WC
+    Client -->|HTTP REST| TC
 
     UC --> US
     WC --> WS
     TC --> TS
 
-    TS -.->|Valida e Debita Saldo| WS
+    TS -.->|Valida e Debita Saldo via Monólito| WS
 
     US --> UR
     WS --> WR
