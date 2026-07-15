@@ -11,13 +11,14 @@ Este projeto foi desenvolvido utilizando as seguintes tecnologias e práticas ar
 ### Back-End
 
 * **Linguagem:** Java 25
-* **Framework:** Spring Boot 4.0.6
+* **Framework:** Spring Boot 4.1.0
 * **Gerenciamento de Dependências:** Maven
 * **Bibliotecas Principais:**
   * `Spring Web` (APIs RESTful)
   * `Spring Security` (Autenticação e Proteção de Rotas)
   * `Spring Boot Validation` (Validações de DTOs com Jakarta)
   * `Lombok` (Redução de código boilerplate)
+  * `Spring Boot Actuator` (Saúde da API)
 
 ### Front-End (Interface do Usuário)
 
