@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
             // Habilita o CORS no nível de Segurança (Crucial para o React)
             .cors(Customizer.withDefaults()) 
@@ -26,7 +26,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // Libera nossos endpoints da API
-                .requestMatchers("/api/v1/users/**", "/api/v1/wallets/**", "/api/v1/orders/**").permitAll()
+                .requestMatchers("/actuator/health", "/api/v1/users/**", "/api/v1/wallets/**", "/api/v1/orders/**").permitAll()
                 // Qualquer outra rota exige autenticação
                 .anyRequest().authenticated()
             );
