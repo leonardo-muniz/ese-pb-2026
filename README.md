@@ -2,6 +2,8 @@
 
 Este projeto é a primeira entrega da disciplina de Engenharia de Softwares Escaláveis, focado no desenvolvimento da estrutura base de uma aplicação monolítica em Spring Boot para o mercado de criptomoedas, preparando o terreno para futuras evoluções.
 
+---
+
 ## 🛠️ Tecnologias e Versões Utilizadas
 
 Este projeto foi desenvolvido utilizando as seguintes tecnologias e práticas arquiteturais:
@@ -35,6 +37,35 @@ Este projeto foi desenvolvido utilizando as seguintes tecnologias e práticas ar
   * *Empty States* dinâmicos que orientam o usuário caso o banco ou simulador estejam vazios.
   * Autenticação simulada baseada em `localStorage`.
 
+---
+
+## 🗺️ Modelagem Estratégica DDD: Domínios, Subdomínios e Bounded Contexts
+
+Para projetar a API da Exchange, foi dividido o problema de negócio utilizando a modelagem estratégica do **Domain-Driven Design (DDD)** que permitiu separar as regras complexas de execução de transações da infraestrutura básica de gerenciamento de contas e saldos.
+
+### 1. Espaço de Problema (Domínios e Subdomínios)
+
+* **Core Domain (Domínio Central):** `Motor de Negociação (Trade / Exchange)`
+  * O coração do produto, onde o valor é entregue diretamente ao cliente através da execução de ordens de compra e venda de criptomoedas de forma ágil e segura.
+
+* **Supporting Subdomain (Subdomínio de Suporte):** `Identity & Access (Gestão de Usuários)`
+  * Essencial para o funcionamento do sistema financeiro (identificação do cliente), mas não é o diferencial competitivo que gera receita direta para a Exchange.
+
+* **Generic Subdomain (Subdomínio Genérico):** `Gestão de Carteiras (Wallet & Ledger)`
+  * Lógica de controle de saldos em moedas fiduciárias (USD) e criptoativos (BTC). Mecanismos de débito/crédito são problemas já resolvidos no mercado e poderiam ser delegados a provedores genéricos (BaaS), mas aqui foram implementados para gerenciar a liquidez das operações localmente.
+
+### 2. Espaço de Solução (Bounded Contexts)
+
+Foi possível identificar três **Bounded Contexts** (Contextos Delimitados) claros no monólito, cada um possuindo sua própria linguagem ubíqua e responsabilidades bem definidas:
+
+| Bounded Context | Domínio/Subdomínio Associado      | Principais Agregados / Entidades | Responsabilidade Principal                                                                                                                            |
+|-----------------|-----------------------------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Trade Context   | Core Domain (Negociação)          | Order (Aggregate Root)           | Controlar a criação de ordens (compra/venda), calcular custos totais baseados no preço de mercado e registrar o status da transação.                  |
+| Wallet Context  | Generic Subdomain (Carteiras)     | Wallet (Aggregate Root)          | Gerenciar os saldos individuais de cada ativo (fiduciário ou cripto), processando depósitos, saques e verificando fundos antes de aprovar transações. |
+| User Context    | Supporting Subdomain (Identidade) | User (Aggregate Root)            | Manter os dados cadastrais básicos necessários para vincular as carteiras financeiras e o histórico de ordens ao proprietário correto.                |
+
+---
+
 ### Arquitetura e Padrões
 
 * **Design de Software:** Adoção do padrão **Monólito Modular** (*Modular Monolith*) com Arquitetura em Camadas (Controller, Service, Repository), garantindo a separação de responsabilidades e a correta injeção de dependências (Princípios SOLID).
@@ -43,6 +74,8 @@ Este projeto foi desenvolvido utilizando as seguintes tecnologias e práticas ar
 * **Design de API:** Construção de uma API RESTful *Stateless* (sem guarda de sessão no servidor), retornando respostas padronizadas e códigos de status HTTP adequados para cada operação.
 * **Tratamento de Exceções:** Uso de um Interceptador Global (`GlobalExceptionHandler`) para a captura padronizada de violações de regras de negócio (`IllegalArgumentException`), falhas de validação e recursos não encontrados (`ResourceNotFoundException`).
 * **Padrões de Projeto Aplicados:** *DTO (Data Transfer Object)* para segurança e controle do tráfego de dados nas requisições/respostas, e *Builder Pattern* para a instanciação limpa e imutável das entidades do domínio.
+
+---
 
 ## 📊 Arquitetura do Sistema
 
