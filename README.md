@@ -1,4 +1,4 @@
-# Exchange API - Monólito Simples (TP1)
+# Exchange API - Monólito Simples com Persistência (TP2)
 
 Este projeto é a primeira entrega da disciplina de Engenharia de Softwares Escaláveis, focado no desenvolvimento da estrutura base de uma aplicação monolítica em Spring Boot para o mercado de criptomoedas, preparando o terreno para futuras evoluções.
 
@@ -65,16 +65,21 @@ Foi possível identificar três **Bounded Contexts** (Contextos Delimitados) cla
 | Wallet Context  | Generic Subdomain (Carteiras)     | Wallet (Aggregate Root)          | Gerenciar os saldos individuais de cada ativo (fiduciário ou cripto), processando depósitos, saques e verificando fundos antes de aprovar transações. |
 | User Context    | Supporting Subdomain (Identidade) | User (Aggregate Root)            | Manter os dados cadastrais básicos necessários para vincular as carteiras financeiras e o histórico de ordens ao proprietário correto.                |
 
----
-
 ### Arquitetura e Padrões
 
 * **Design de Software:** Adoção do padrão **Monólito Modular** (*Modular Monolith*) com Arquitetura em Camadas (Controller, Service, Repository), garantindo a separação de responsabilidades e a correta injeção de dependências (Princípios SOLID).
 * **Domain-Driven Design (DDD):** Isolamento lógico através de *Bounded Contexts* (`User`, `Wallet`, `Trade`), estruturando o código em torno do domínio de negócios para manter a coesão e facilitar uma futura transição para microsserviços.
-* **Estratégia de Persistência (Escopo TP1):** Implementação de repositórios baseados em memória (`ArrayList`) com geração autônoma de identificadores únicos (`UUID`), garantindo o funcionamento estrito do CRUD e simulação de estado sem o acoplamento a um banco de dados real nesta fase.
+* **Estratégia de Persistência (Escopo TP2):** Integração do **Spring Data JPA** com banco de dados relacional (**PostgreSQL** para produção e **H2** em modo de compatibilidade para testes). Transição completa dos repositórios em memória para interfaces transacionais do **Spring Data**, garantindo persistência real e mapeamento objeto-relacional (ORM) estruturado com o Hibernate.
+* **Histórico de Dados e Auditoria (Envers):** Implementação do framework **Hibernate Envers** através da anotação `@Audited` nas entidades principais. Isso permite o rastreamento automático do ciclo de vida dos registros, criando tabelas de auditoria (como `orders_aud`) que documentam todas as mudanças de estado para fins de rastreabilidade empresarial.
 * **Design de API:** Construção de uma API RESTful *Stateless* (sem guarda de sessão no servidor), retornando respostas padronizadas e códigos de status HTTP adequados para cada operação.
 * **Tratamento de Exceções:** Uso de um Interceptador Global (`GlobalExceptionHandler`) para a captura padronizada de violações de regras de negócio (`IllegalArgumentException`), falhas de validação e recursos não encontrados (`ResourceNotFoundException`).
 * **Padrões de Projeto Aplicados:** *DTO (Data Transfer Object)* para segurança e controle do tráfego de dados nas requisições/respostas, e *Builder Pattern* para a instanciação limpa e imutável das entidades do domínio.
+
+---
+
+## 💾 Modelagem de Dados e Arquitetura (JPA & Clean Code)
+
+A arquitetura do projeto foi estruturada aplicando princípios de **Clean Code** e separação de responsabilidades. A camada de dados foi totalmente isolada, separando as entidades de persistência (`JpaEntity`) das entidades de domínio puro. Essa abordagem garante um alto nível de encapsulamento, promove o uso adequado de polimorfismo orientado a objetos na camada de negócio e mantém as regras centrais da aplicação independentes de frameworks de infraestrutura ou banco de dados.
 
 ---
 
@@ -114,7 +119,7 @@ graph TD
         TR[Order Repository]:::repository
     end
 
-    DB[(In-Memory Lists)]:::database
+    DB[(Relational Database PostgreSQL/H2)]:::database
 
     Client -->|HTTP REST| UC
     Client -->|HTTP REST| WC
@@ -161,7 +166,7 @@ sequenceDiagram
     deactivate WS
 
     TS->>TS: Calcula totalCost = amount * price
-    
+
     TS->>WS: withdraw(fiatWalletId, totalCost)
     activate WS
     Note over WS: Deduz o saldo<br/>da carteira em Dólar
@@ -170,7 +175,7 @@ sequenceDiagram
 
     TS->>TR: save(newOrder)
     activate TR
-    TR->>DB: Add to List
+    TR->>DB: INSERT INTO orders (and orders_aud)
     DB-->>TR: Success
     TR-->>TS: Saved Order
     deactivate TR
@@ -181,3 +186,38 @@ sequenceDiagram
     TC-->>Client: 201 Created (JSON Response)
     deactivate TC
 ```
+
+## 🐳 Infraestrutura e Execução (Docker)
+
+Para garantir um ambiente de desenvolvimento padronizado e facilitar a execução do banco de dados relacional, o projeto utiliza o Docker. A infraestrutura do PostgreSQL, Node.js (Front-end) e API estão configuradas no arquivo `docker-compose.yml`.
+
+### **Pré-requisitos:**
+
+* **Docker** e **Docker Compose** instalados na máquina.
+* **Java 25** e **Maven** (para os testes).
+
+#### Passo a passo para execução usando Docker
+
+1. Na raiz do projeto, suba os containeres do banco de dados, da API e do front-end em segundo plano:
+
+   ```bash
+   docker compose up -d
+   ```
+
+  Ao iniciar, o Hibernate criará e atualizará as tabelas automaticamente (`ddl-auto=update`).
+
+1. Você pode acessar o front-end através da porta 5173 (`localhost:5173`) e a API pela porta 8080 (`localhost:8080`).
+
+#### Passos para execução local e de testes
+
+1. Para rodar a API localmente, execute a classe principal da aplicação ou utilize o comando Maven:
+
+  ```bash
+  mvn spring-boot:run
+  ```
+
+2. Para executar a suíte de testes (que utiliza o banco H2 em memória e não interfere no banco de dados principal), rode:
+
+  ```bash
+  mvn clean test
+  ```
