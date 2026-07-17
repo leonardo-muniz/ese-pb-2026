@@ -46,7 +46,7 @@ public class OrderJpaEntity {
     private UserJpaEntity user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 10, columnDefinition = "VARCHAR(10)")
     private OrderType type;
 
     @Column(nullable = false, length = 10)
@@ -59,7 +59,7 @@ public class OrderJpaEntity {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private OrderStatus status;
 
     @Column(nullable = false, updatable = false)
