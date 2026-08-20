@@ -1,0 +1,65 @@
+# Movemos para o repositório de configuração / branch especializada.
+# Agora podemos gerenciar facilmente as configurações de cada microsserviço.
+
+# Nome da Aplicação
+spring.application.name=wallet-service
+
+# Define a porta em que a API vai rodar
+# Opcional, mas boa prática para evitar conflitos
+server.port=8082
+
+# ==========================================
+# EUREKA CLIENT
+# ==========================================
+eureka.client.service-url.defaultZone=${EUREKA_URL:http://eureka-server:8761/eureka}
+eureka.instance.prefer-ip-address=true
+
+# ==========================================
+# FEIGN + LOADBALANCER
+# ==========================================
+spring.cloud.openfeign.client.config.default.connect-timeout=5000
+spring.cloud.openfeign.client.config.default.read-timeout=5000
+
+# ==========================================
+# CONFIGURAÇÕES DE SEGURANÇA
+# ==========================================
+# O Spring Security gera uma senha aleatória no console toda vez que você reinicia o projeto.
+# Definir um usuário e senha padrão limpa o seu console e desativa essa geração aleatória.
+spring.security.user.name=${SPRING_SEC_USERNAME}
+spring.security.user.password=${SPRING_SEC_PASSWORD}
+
+# ==========================================
+# ACTUATOR
+# ==========================================
+# Forçar a exibição do status de componentes internos no Spring Boot Actuator
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=always
+
+info.app.name=user-service
+info.app.description=User microservice
+
+# ==========================================
+# CONFIGURAÇÕES DE LOGS
+# ==========================================
+# Mostra logs detalhados apenas das nossas classes (DEBUG) para facilitar a caça a bugs
+logging.level.com.exchange.crypto.user-service=DEBUG
+# Mantém os logs do Spring Web normais (INFO)
+logging.level.org.springframework.web=INFO
+
+# ==========================================
+# DATABASE
+# ==========================================
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=${DB_DRIVER}
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=${DB_DIALECT}
+
+# Hibernate Envers (Histórico)
+spring.jpa.properties.org.hibernate.envers.audit_table_suffix=_history
+spring.jpa.properties.org.hibernate.envers.store_data_at_delete=true
