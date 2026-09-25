@@ -1,0 +1,234 @@
+services:
+  eureka-server:
+    image: ghcr.io/${OWNER}/exchange_api-eureka-server:latest
+    container_name: eureka_server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  config-server:
+    image: ghcr.io/${OWNER}/exchange_api-config-server:latest
+    container_name: config_server
+    depends_on:
+      - eureka-server
+    environment:
+      GITHUB_REPO_URL: https://github.com/leonardo-muniz/ese-pb-2026
+      GIT_CONFIG_BRANCH: config-server
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  api-gateway:
+    image: ghcr.io/${OWNER}/exchange_api-api-gateway:latest
+    container_name: api_gateway
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      CONFIG_URL: http://config-server:8888
+      EUREKA_URL: http://eureka-server:8761/eureka
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    ports:
+      - "8080:8080"
+    networks:
+      - microservices-net
+
+  user-db:
+    image: postgres:18-alpine
+    container_name: user_service_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # PLEASE CHANGE !
+      POSTGRES_DB: user_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - user_pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  wallet-db:
+    image: postgres:18-alpine
+    container_name: wallet_service_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # PLEASE CHANGE !
+      POSTGRES_DB: wallet_service_db
+    ports:
+      - "5433:5433"
+    volumes:
+      - wallet_pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wallet_service_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  trade-db:
+    image: postgres:18-alpine
+    container_name: trade_service_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # PLEASE CHANGE !
+      POSTGRES_DB: trade_db
+    ports:
+      - "5434:5434"
+    volumes:
+      - trade_pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trade_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  user-service:
+    image: ghcr.io/${OWNER}/exchange_api-user-service:latest
+    container_name: user_service_app
+    depends_on:
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+      user-db:
+        condition: service_healthy
+    environment:
+      CONFIG_URL: http://config-server:8888
+      DB_URL: jdbc:postgresql://user-db:5432/user_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres # PLEASE CHANGE !
+      DB_DRIVER: org.postgresql.Driver
+      DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      EUREKA_URL: http://eureka-server:8761/eureka
+      SPRING_SEC_USERNAME: admin
+      SPRING_SEC_PASSWORD: admin123 # PLEASE CHANGE !
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  wallet-service:
+    image: ghcr.io/${OWNER}/exchange_api-wallet-service:latest
+    container_name: wallet_service_app
+    depends_on:
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+      wallet-db:
+        condition: service_healthy
+    environment:
+      CONFIG_URL: http://config-server:8888
+      DB_URL: jdbc:postgresql://wallet-db:5433/wallet_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres # PLEASE CHANGE !
+      DB_DRIVER: org.postgresql.Driver
+      DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      EUREKA_URL: http://eureka-server:8761/eureka
+      SPRING_SEC_USERNAME: admin
+      SPRING_SEC_PASSWORD: admin123 # PLEASE CHANGE !
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  trade-service:
+    image: ghcr.io/${OWNER}/exchange_api-trade-service:latest
+    container_name: trade_service_app
+    depends_on:
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+      trade-db:
+        condition: service_healthy
+    environment:
+      CONFIG_URL: http://config-server:8888
+      DB_URL: jdbc:postgresql://trade-db:5434/trade_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres # PLEASE CHANGE !
+      DB_DRIVER: org.postgresql.Driver
+      DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      EUREKA_URL: http://eureka-server:8761/eureka
+      SPRING_SEC_USERNAME: admin
+      SPRING_SEC_PASSWORD: admin123 # PLEASE CHANGE !
+    ports:
+      - "8083:8083"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+  frontend-prod:
+    image: ghcr.io/${OWNER}/exchange_api-exchange-frontend-ts:latest
+    container_name: exchange-frontend
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    environment:
+      VITE_API_URL: http://api-gateway:8080
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - microservices-net
+
+volumes:
+  user_pg_data:
+  wallet_pg_data:
+  trade_pg_data:
+
+networks:
+  microservices-net:
+    driver: bridge
