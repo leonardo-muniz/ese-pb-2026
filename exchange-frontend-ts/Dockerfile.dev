@@ -1,0 +1,15 @@
+# Build and run the React application in development mode
+FROM node:26-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Expose your dev port (5173 for Vite, 3000 for Create React App)
+EXPOSE 5173
+
+# Adjust script according to your package.json (e.g., "start" or "dev")
+CMD ["npm", "run", "dev"]
