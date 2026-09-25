@@ -1,5 +1,5 @@
 # Etapa 1: Build (Compilação)
-FROM maven:3.9.16-eclipse-temurin-25 AS builder
+FROM maven:3.9-eclipse-temurin-25-alpine AS builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Execução (Runtime)
-FROM eclipse-temurin:25-jre-alpine
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Criação de um grupo e usuário sem privilégios
 RUN addgroup -S spring && adduser -S spring -G spring
