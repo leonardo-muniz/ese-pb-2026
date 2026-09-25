@@ -1,0 +1,16 @@
+target/
+build/
+.git/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+nbproject/
+.settings/
+.classpath
+.project
+
+# OS clutter
+.DS_Store
+Thumbs.db
