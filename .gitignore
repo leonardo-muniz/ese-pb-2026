@@ -1,0 +1,59 @@
+# =========================================================================
+# Shared Project & Build Tools (Converted to Root/Recursive)
+# =========================================================================
+**/HELP.md
+**/target/
+**/build/
+**/out/
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Exceptions to prevent ignoring 'target' directories inside source code
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# =========================================================================
+# Spring Tool Suite (STS) & Eclipse (Converted to Root/Recursive)
+# =========================================================================
+**/.apt_generated
+**/.classpath
+**/.factorypath
+**/.project
+**/.settings/
+**/.springBeans
+**/.sts4-cache/
+
+# Java log files
+**/*.log
+
+# =========================================================================
+# IntelliJ IDEA (Recursive)
+# =========================================================================
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+
+# =========================================================================
+# Visual Studio Code (VS Code) (Recursive)
+# =========================================================================
+**/.vscode/
+**/*.code-workspace
+
+# =========================================================================
+# NetBeans (Recursive for Nested Projects)
+# =========================================================================
+**/nbproject/private/
+**/nbbuild/
+**/dist/
+**/nbdist/
+**/.nb-gradle/
+
+# Exceptions to prevent ignoring 'build' directories inside source code
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# =========================================================================
+# Operating System Files
+# =========================================================================
+Thumbs.db
+**/.DS_Store
