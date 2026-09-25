@@ -30,7 +30,7 @@ A comunicação entre os componentes ocorre por meio de requisições HTTP, perm
 ### Back-End
 
 - **Linguagem:** Java 25
-- **Framework:** Spring Boot 4.1.0
+- **Framework:** Spring Boot 4.1.1
 - **Gerenciamento de Dependências:** Maven
 - **Bibliotecas Principais:**
   - `Spring Web` (APIs RESTful)
@@ -38,8 +38,9 @@ A comunicação entre os componentes ocorre por meio de requisições HTTP, perm
   - `Spring Boot Validation` (Validações de DTOs com Jakarta)
   - `Lombok` (Redução de código boilerplate)
   - `Spring Boot Actuator` (Saúde da API)
-  - `Eureka Discovery Server` (Descoberta e registro de serviços)
+  - `Spring Cloud 2025.1.3` (Cloud Infrastructure)
   - `Spring Cloud Gateway` (Roteamento centralizado de requisições)
+  - `Eureka Discovery Server` (Descoberta e registro de serviços)
   - `Spring Config Server` (Configuração centralizada dos microsserviços)
 
 ### Front-End (Interface do Usuário)
@@ -84,6 +85,9 @@ DB_PASSWORD: mysql # PLEASE CHANGE !
 DB_DRIVER: com.mysql.cj.jdbc.Driver
 DB_DIALECT: org.hibernate.dialect.MySQLDialect
 ```
+
+> [!WARNING]
+> Não esqueça de alterar o banco de dados no pom.xml da mesma forma.
 
 ### Infraestrutura
 
