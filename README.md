@@ -277,7 +277,8 @@ Para garantir um ambiente de desenvolvimento padronizado e facilitar a execuçã
 1. Na raiz do projeto, suba os containeres do banco de dados, da API e do front-end em segundo plano:
 
    ```bash
-   docker compose up -d
+   cd infra
+   docker compose up --build -d
    ```
 
     Ao iniciar, o Hibernate criará e atualizará as tabelas automaticamente (`ddl-auto=update`).
@@ -289,14 +290,27 @@ Para garantir um ambiente de desenvolvimento padronizado e facilitar a execuçã
 1. Para rodar a API localmente, execute a classe principal da aplicação ou utilize o comando Maven:
 
     ```bash
+    cd <projeto>
     mvn spring-boot:run
+    # Windows
+    mvnw spring-boot:run
     ```
 
 2. Para executar a suíte de testes (que utiliza o banco H2 em memória e não interfere no banco de dados principal), rode:
 
     ```bash
     mvn clean test
+    # Windows
+    mvnw clean test
     ```
+
+> [!TIP]
+> Execução com as imagens do GitHub Container Registry (GHCR)
+
+```bash
+cd infra
+docker compose -f docker-compose.prod.yml up --build -d
+```
 
 ---
 
