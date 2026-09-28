@@ -1,4 +1,21 @@
 services:
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: exchange_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: exchange
+      RABBITMQ_DEFAULT_PASS: exchange
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - microservices-net
+
   eureka-server:
     build:
       context: ../eureka-server
@@ -161,6 +178,8 @@ services:
         condition: service_started
       config-server:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       wallet-db:
         condition: service_healthy
     environment:
@@ -171,6 +190,9 @@ services:
       DB_DRIVER: org.postgresql.Driver
       DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       EUREKA_URL: http://eureka-server:8761/eureka
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: exchange
+      RABBITMQ_PASSWORD: exchange
       SPRING_SEC_USERNAME: admin
       SPRING_SEC_PASSWORD: admin123 # PLEASE CHANGE !
     ports:
@@ -194,6 +216,8 @@ services:
         condition: service_started
       config-server:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       trade-db:
         condition: service_healthy
     environment:
@@ -204,6 +228,9 @@ services:
       DB_DRIVER: org.postgresql.Driver
       DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       EUREKA_URL: http://eureka-server:8761/eureka
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: exchange
+      RABBITMQ_PASSWORD: exchange
       SPRING_SEC_USERNAME: admin
       SPRING_SEC_PASSWORD: admin123 # PLEASE CHANGE !
     ports:
