@@ -21,23 +21,23 @@
 	</properties>
 
 	<dependencies>
-		<!-- Web (necessário para o dashboard do Eureka) -->
+		<!-- Aplicação web: dashboard do Eureka -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
-		<!-- Eureka Server Core -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-        </dependency>
+		<!-- Spring Cloud: servidor de descoberta -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+		</dependency>
 
-        <!-- Actuator para Health Check & Metrics -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
+		<!-- Operação: health check e métricas -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 	
 	<dependencyManagement>
