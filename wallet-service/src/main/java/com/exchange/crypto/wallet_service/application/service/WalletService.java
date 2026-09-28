@@ -64,6 +64,15 @@ public class WalletService {
         return walletRepository.save(wallet);
     }
 
+    public Wallet withdrawByUserAndCurrency(UUID userId, String currency, BigDecimal amount) {
+        Wallet wallet = walletRepository.findByUserId(userId).stream()
+                .filter(candidate -> candidate.getCurrency().equalsIgnoreCase(currency))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Carteira " + currency + " não encontrada."));
+
+        return withdraw(wallet.getId(), amount);
+    }
+
     public List<WalletHistory> getWalletHistory(UUID id) {
         List<WalletHistory> domainHistoryList = walletRepository.findHistoryById(id);
 
