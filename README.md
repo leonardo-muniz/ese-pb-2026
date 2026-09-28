@@ -7,7 +7,7 @@ Repositório criado para a disciplina de **Projeto de Bloco em Engenharia de Sof
 * [x] [**Teste de Performance 1**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp1/)
 * [x] [**Teste de Performance 2**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp2/)
 * [x] [**Teste de Performance 3**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp3/)
-* [ ] Teste de Performance 4
+* [x] [**Teste de Performance 4**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp4/)
 * [ ] Teste de Performance 5
 * [ ] Entrega de Projeto
 
@@ -16,7 +16,7 @@ Repositório criado para a disciplina de **Projeto de Bloco em Engenharia de Sof
 * [x] **TP1:** Construir uma monolito simples com Spring Boot.
 * [x] **TP2:** Desenvolver uma camada de persistência real para uma aplicação usando anotações JPA e repositórios Spring Data.
 * [x] **TP3:** Criar um microsserviço conectado a uma aplicação existente.
-* [ ] **TP4:** Refatorar um sistema fortemente acoplado para uma arquitetura orientada a eventos.
+* [x] **TP4:** Refatorar um sistema fortemente acoplado para uma arquitetura orientada a eventos.
 * [ ] **TP5:** Preparar o sistema desenvolvido para operação através de conteinerização, monitoramento e testes.
 
 ## :warning: Aviso
