@@ -19,9 +19,8 @@ Repositório criado para a disciplina de **Projeto de Bloco em Engenharia de Sof
 * [x] **TP4:** Refatorar um sistema fortemente acoplado para uma arquitetura orientada a eventos.
 * [x] **TP5:** Preparar o sistema desenvolvido para operação através de conteinerização, monitoramento e testes.
 
-## :warning: Aviso
-
-Todo o conteúdo deste repositório pode ser usado para quaisquer fim e está aberto a contribuição.
+> [!IMPORTANT]
+> Todo o conteúdo deste repositório pode ser usado para quaisquer fim e está aberto a contribuição.
 
 ## :student: Aluno
 
