@@ -8,8 +8,8 @@ Repositório criado para a disciplina de **Projeto de Bloco em Engenharia de Sof
 * [x] [**Teste de Performance 2**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp2/)
 * [x] [**Teste de Performance 3**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp3/)
 * [x] [**Teste de Performance 4**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp4/)
-* [ ] Teste de Performance 5
-* [ ] Entrega de Projeto
+* [x] [**Teste de Performance 5**](https://github.com/leonardo-muniz/ese-pb-2026/tree/tp5/)
+* [x] [**Entrega de Projeto**](https://alinfnetedubr-my.sharepoint.com/:f:/g/personal/leonardo_muniz_al_infnet_edu_br/IgCrZDWB5nCST6aKabVHbEHgAQoNDF32TMnZKp8rvJMivds)
 
 ### Ao final desta disciplina, você será capaz de demonstrar as seguintes competências:
 
@@ -17,7 +17,7 @@ Repositório criado para a disciplina de **Projeto de Bloco em Engenharia de Sof
 * [x] **TP2:** Desenvolver uma camada de persistência real para uma aplicação usando anotações JPA e repositórios Spring Data.
 * [x] **TP3:** Criar um microsserviço conectado a uma aplicação existente.
 * [x] **TP4:** Refatorar um sistema fortemente acoplado para uma arquitetura orientada a eventos.
-* [ ] **TP5:** Preparar o sistema desenvolvido para operação através de conteinerização, monitoramento e testes.
+* [x] **TP5:** Preparar o sistema desenvolvido para operação através de conteinerização, monitoramento e testes.
 
 ## :warning: Aviso
 
