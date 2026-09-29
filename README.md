@@ -1,5 +1,7 @@
 # Exchange API - Migração para Arquitetura de Microsserviços (TP3)
 
+[![Build passing](https://github.com/leonardo-muniz/ese-pb-2026/actions/workflows/deploy.yml/badge.svg?branch=tp4)](https://github.com/leonardo-muniz/ese-pb-2026/actions/workflows/deploy.yml?query=branch%3Atp4)
+
 ## Objetivo
 
 O objetivo desta atividade foi migrar a aplicação desenvolvida no TP2, originalmente implementada como um sistema monolítico com persistência em banco de dados, para uma arquitetura baseada em microsserviços.
@@ -129,7 +131,60 @@ Foi possível identificar três **Bounded Contexts** (Contextos Delimitados) cla
 
 - **Estratégia de Persistência (Escopo TP3):** A persistência foi descentralizada seguindo o princípio **Database per Service**, permitindo que cada microsserviço seja responsável pelos seus próprios dados. Foram mantidas as integrações com **Spring Data JPA**, **Hibernate** e bancos relacionais, garantindo independência dos repositórios e redução do acoplamento entre domínios.
 
-- **Comunicação entre Serviços:** Implementação de comunicação síncrona via **REST APIs**, permitindo a colaboração entre os microsserviços de forma desacoplada. Os contratos de integração foram definidos através de endpoints específicos para troca de informações entre os domínios da aplicação.
+- **Comunicação entre Serviços:** Os endpoints REST continuam sendo usados para consultas e comandos síncronos de baixa latência. Para o fluxo de negociação, a integração entre `Trade` e `Wallet` foi refatorada para eventos assíncronos com RabbitMQ, evitando que a criação de uma ordem dependa da disponibilidade imediata do outro serviço.
+
+## Arquitetura Orientada a Eventos
+
+### Avaliação
+
+Arquitetura orientada a eventos (EDA) organiza a comunicação por fatos ou comandos publicados em um broker. O produtor não precisa conhecer a implementação ou a disponibilidade dos consumidores.
+
+**Vantagens:**
+
+- reduz o acoplamento temporal e de implementação entre microsserviços;
+- permite absorver picos de tráfego com filas e consumidores escaláveis;
+- oferece retry, confirmação, roteamento e armazenamento temporário de mensagens;
+- facilita a inclusão de novos consumidores, como auditoria, notificações e analytics, sem alterar o produtor.
+
+**Desvantagens:**
+
+- a consistência entre bancos passa a ser eventual, exigindo estados intermediários e observabilidade;
+- rastrear uma operação distribuída é mais difícil do que rastrear uma chamada HTTP;
+- mensagens podem ser duplicadas, fora de ordem ou rejeitadas, portanto consumidores precisam ser idempotentes;
+- o broker se torna uma dependência operacional adicional e contratos de mensagens precisam de versionamento.
+
+EDA é mais vantajosa quando a operação admite processamento assíncrono, há picos de carga ou vários consumidores precisam reagir ao mesmo fato. Não é a melhor escolha para validações que exigem resposta imediata e consistência forte entre múltiplos dados.
+
+### Padrões de mensagens usados
+
+| Padrão | Aplicação no sistema | Decisão |
+|---|---|---|
+| **Command** | `wallet.debit.requested` solicita que o Wallet debite uma carteira | O Trade envia somente o contrato necessário, sem compartilhar entidades ou banco |
+| **Event notification** | Uma ordem criada pode futuramente notificar auditoria ou notificações | Novos consumidores podem ser ligados ao mesmo topic exchange |
+| **Publish/subscribe** | O exchange `exchange.events` roteia mensagens por routing key | Produtores não conhecem a quantidade de consumidores |
+| **Dead letter queue** | `wallet.debit.requested.dlq` recebe falhas não reencaminhadas | Mensagens inválidas ficam disponíveis para inspeção e reprocessamento |
+
+### Implementação RabbitMQ e Spring Boot
+
+O `Trade Service` persiste a ordem como `OPEN` e publica um `WalletDebitRequested` no topic exchange `exchange.events`. O `Wallet Service` consome a fila durável `wallet.debit.requested.queue`, executa o débito em uma transação local e registra o `eventId` em `processed_events`. Assim, uma reentrega do RabbitMQ não gera um segundo débito. Falhas são encaminhadas para a dead-letter queue.
+
+```mermaid
+flowchart LR
+  API[POST /orders] --> TRADE[Trade Service]
+  TRADE --> TDB[(Trade DB)]
+  TRADE -->|wallet.debit.requested| EX((exchange.events))
+  EX --> Q[wallet.debit.requested.queue]
+  Q --> WALLET[Wallet Service]
+  WALLET --> WDB[(Wallet DB)]
+  Q -. falha .-> DLX((exchange.events.dlx))
+  DLX --> DLQ[wallet.debit.requested.dlq]
+```
+
+O Spring Boot simplifica a integração por meio de `RabbitTemplate`, `@RabbitListener`, `JacksonJsonMessageConverter` e beans declarativos de `TopicExchange`, `Queue` e `Binding`. A configuração usa variáveis de ambiente (`RABBITMQ_HOST`, `RABBITMQ_USER` e `RABBITMQ_PASSWORD`) e o `docker-compose` inclui o RabbitMQ com painel de gerenciamento na porta `15672`.
+
+### Refatoração e limites
+
+Antes, o `Trade Service` consultava carteiras e executava `withdraw` por Feign durante a requisição HTTP. Agora ele publica um comando e o `Wallet Service` é o único responsável pelo saldo. Isso melhora a disponibilidade e a escalabilidade, mas a resposta da criação da ordem representa o aceite do pedido, não a conclusão do débito. Em uma evolução de produção, o próximo passo é usar o padrão **Transactional Outbox** no Trade para garantir a publicação do evento junto com a persistência da ordem, além de publicar eventos de sucesso ou falha para atualizar o status da ordem.
 
 - **Observabilidade e Resiliência:** Estrutura preparada para monitoramento individual dos serviços, facilitando identificação de falhas, rastreamento de requisições e manutenção independente dos componentes distribuídos.
 
@@ -163,25 +218,31 @@ Este diagrama demonstra a composição da arquitetura distribuída, incluindo Se
 
 ```mermaid
 graph TD
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
-    classDef infra fill:#ffd580,stroke:#333,stroke-width:2px,color:#000;
-    classDef service fill:#bfb,stroke:#333,stroke-width:2px,color:#000;
-    classDef database fill:#ddd,stroke:#333,stroke-width:2px,color:#000;
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:#000
+    classDef infra fill:#ffd580,stroke:#333,stroke-width:2px,color:#000
+    classDef service fill:#bfb,stroke:#333,stroke-width:2px,color:#000
+    classDef database fill:#ddd,stroke:#333,stroke-width:2px,color:#000
 
-    Client[Front-end React / Postman\]:::client
+    Client["Front-end React / Postman"]:::client
 
-    Gateway[API Gateway\]:::infra
-    Eureka[Eureka Server\]:::infra
-    Config[Config Server\]:::infra
-    Repo["(Config Repository)\"]:::infra
+    Gateway["API Gateway"]:::infra
+    Eureka["Eureka Server"]:::infra
+    Config["Config Server"]:::infra
+    Repo["Config Repository"]:::infra
 
-    UserService[User Service\]:::service
-    WalletService[Wallet Service\]:::service
-    TradeService[Trade Service\]:::service
+    UserService["User Service"]:::service
+    WalletService["Wallet Service"]:::service
+    TradeService["Trade Service"]:::service
 
-    UserDB["(User Database)\"]:::database
-    WalletDB["(Wallet Database)\"]:::database
-    TradeDB["(Trade Database)\"]:::database
+    UserDB["User Database"]:::database
+    WalletDB["Wallet Database + processed_events"]:::database
+    TradeDB["Trade Database"]:::database
+
+    Rabbit["RabbitMQ"]:::infra
+    Events["exchange.events"]:::infra
+    DebitQueue["wallet.debit.requested.queue"]:::service
+    DeadLetter["exchange.events.dlx"]:::infra
+    DeadQueue["wallet.debit.requested.dlq"]:::service
 
     Client -->|HTTP REST| Gateway
 
@@ -205,62 +266,62 @@ graph TD
     WalletService --> WalletDB
     TradeService --> TradeDB
 
-    TradeService -.->|REST API| WalletService
+    TradeService -->|wallet.debit.requested| Rabbit
+    Rabbit --> Events
+    Events --> DebitQueue
+    DebitQueue -->|Rabbit listener| WalletService
+    DebitQueue -.->|rejeição| DeadLetter
+    DeadLetter --> DeadQueue
 ```
 
 ### 2. Diagrama de Sequência (Caso de Uso: Nova Ordem de Compra)
 
-O fluxo abaixo ilustra a comunicação distribuída entre Gateway, Trade Service e Wallet Service durante a criação de uma nova ordem.
+O fluxo abaixo ilustra a comunicação assíncrona entre Gateway, Trade Service, RabbitMQ e Wallet Service durante a criação de uma nova ordem.
 
 ```mermaid
 sequenceDiagram
     autonumber
 
     actor Client as Front-End React
-
     participant GW as API Gateway
     participant TS as Trade Service
-    participant WS as Wallet Service
-
     participant TDB as Trade Database
+    participant RM as RabbitMQ
+    participant Q as Wallet Debit Queue
+    participant WS as Wallet Service
     participant WDB as Wallet Database
+    participant DLQ as Dead Letter Queue
 
     Client->>GW: POST /orders
-
     activate GW
     GW->>TS: Encaminha requisição
-    deactivate GW
-
     activate TS
 
-    TS->>WS: GET Wallets by User
-    activate WS
+    TS->>TDB: INSERT Order (OPEN)
+    TDB-->>TS: Order persisted
+    TS->>RM: Publish wallet.debit.requested
+    RM->>Q: Route by routing key
 
-    WS->>WDB: SELECT Wallet
-    WDB-->>WS: Wallet
-
-    WS-->>TS: Wallet Response
-    deactivate WS
-
-    TS->>TS: Calcula valor total da ordem
-
-    TS->>WS: POST Withdraw
-    activate WS
-
-    WS->>WDB: UPDATE Wallet Balance
-    WDB-->>WS: Success
-
-    WS-->>TS: Wallet Updated
-    deactivate WS
-
-    TS->>TDB: INSERT Order
-    TDB-->>TS: Success
-
-    TS-->>GW: Order Created
-
+    TS-->>GW: 201 Created (order OPEN)
     deactivate TS
+    GW-->>Client: Order accepted for processing
+    deactivate GW
 
-    GW-->>Client: 201 Created
+    Q->>WS: Deliver WalletDebitRequested
+    activate WS
+
+    alt Débito processado
+        WS->>WDB: Find wallet and debit USD
+        WS->>WDB: Save eventId in processed_events
+        WDB-->>WS: Transaction committed
+        WS-->>Q: ACK
+    else Falha no processamento
+        WS-->>Q: Reject message
+        Q->>DLQ: Route to exchange.events.dlx
+        Note over DLQ: Aguarda inspeção ou reprocessamento
+    end
+
+    deactivate WS
 ```
 
 ## 🐳 Infraestrutura e Execução (Docker)
