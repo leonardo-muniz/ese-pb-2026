@@ -2,7 +2,7 @@ name: Build & Push Microservices Docker Images
 
 on:
   push:
-    branches: [ "tp4" ]
+    branches: [ "tp5" ]
 
 # Permissão explícita para criar pacotes no GHCR
 permissions:
