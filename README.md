@@ -1,6 +1,6 @@
 # Exchange API - Migração para Arquitetura de Microsserviços (TP3)
 
-[![Build passing](https://github.com/leonardo-muniz/ese-pb-2026/actions/workflows/deploy.yml/badge.svg?branch=tp4)](https://github.com/leonardo-muniz/ese-pb-2026/actions/workflows/deploy.yml?query=branch%3Atp4)
+[![Build passing](https://github.com/leonardo-muniz/ese-pb-2026/actions/workflows/deploy.yml/badge.svg?branch=tp5)](https://github.com/leonardo-muniz/ese-pb-2026/actions/workflows/deploy.yml?query=branch%3Atp5)
 
 ## Objetivo
 
